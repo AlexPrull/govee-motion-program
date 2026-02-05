@@ -1,2 +1,2 @@
-Raspberry pi
-a laptop
+requests
+gpiozero

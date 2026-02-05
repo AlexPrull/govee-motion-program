@@ -1,3 +1,9 @@
+"""
+Helper script to list all Govee devices associated with the API key.
+Used during setup to discover device IDs, models (SKU), and capabilities.
+Not used by the main automation runtime.
+"""
+
 import requests
 from config import API_KEY
 

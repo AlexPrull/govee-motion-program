@@ -1,3 +1,9 @@
+"""
+Helper script to query available scenes for a specific Govee device.
+Used to discover scene IDs and parameter IDs required for scene activation.
+Not used by the main automation runtime.
+"""
+
 import requests
 import uuid
 
