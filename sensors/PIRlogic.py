@@ -1,5 +1,6 @@
-def motion_detected() -> bool:
-    """
-    replace with actual motion sensor logic, return true if detected
-    """
-    return True
+from gpiozero import MotionSensor
+
+pir = MotionSensor(17)
+
+def motion_detected():
+    return pir.motion_detected
