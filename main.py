@@ -10,7 +10,7 @@ Main automation loop for Govee motion-based lighting.
 
 import time
 from datetime import datetime
-from govee_api import activate_scene, set_brightness
+from govee_api import activate_scene, set_brightness, is_power_on
 from sensors.PIRlogic import motion_detected
 
 # Import configuration values
@@ -23,20 +23,25 @@ from config import (
     NIGHT_BRIGHTNESS,
 )
 
-# Timestamp of last scene activation (used to enforce cooldown)
-last_scene_time = None
-
-# Minimum time between scene activations (seconds)
-SCENE_COOLDOWN = 60 * 60  # 1 hour
-
-# Tracks current brightness to avoid redundant API calls
-current_brightness = None
+last_scene_time = None  # Timestamp of last scene activation (used to enforce cooldown)
+SCENE_COOLDOWN = 60 * 60  # Minimum time between scene activations (seconds) Set to 1 hour
+current_brightness = None  # Tracks current brightness to avoid redundant API calls
+last_power_check = 0  # Timestamp of last API call
+power_check_interval = 60  # Seconds between API calls
+device_is_on = False  # cached power state
 
 print("Govee motion system started")
 
 while True:
     now = datetime.now()
     hour = now.hour
+
+    if time.time() - last_power_check > power_check_interval:
+        try:
+            device_is_on = is_power_on()  # API call
+        except Exception as e:
+            print("Error fetching device state:", e)
+        last_power_check = time.time()
 
     try:
         # Activate scene on motion after the configured start hour,
@@ -47,13 +52,15 @@ while True:
                 or time.time() - last_scene_time > SCENE_COOLDOWN
             ):
                 activate_scene(LONGING_PARAM_ID, LONGING_SCENE_ID)
+
+                desired = DAY_BRIGHTNESS if hour < DIM_HOUR else NIGHT_BRIGHTNESS
+                set_brightness(desired)
+                current_brightness = desired
                 last_scene_time = time.time()
 
         # Adjust brightness based on time of day
-        if hour >= LIGHT_ON_HOUR:
-            desired = (
-                DAY_BRIGHTNESS if hour < DIM_HOUR else NIGHT_BRIGHTNESS
-            )
+        if device_is_on and hour >= LIGHT_ON_HOUR:
+            desired = NIGHT_BRIGHTNESS
             if desired != current_brightness:
                 set_brightness(desired)
                 current_brightness = desired
