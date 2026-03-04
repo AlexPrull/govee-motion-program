@@ -36,7 +36,7 @@ while True:
     now = datetime.now()
     hour = now.hour
 
-    if time.time() - last_power_check > power_check_interval:
+    if (time.time() - last_power_check) > power_check_interval:
         try:
             device_is_on = is_power_on()  # API call
         except Exception as e:
@@ -47,12 +47,8 @@ while True:
         # Activate scene on motion after the configured start hour,
         # but only if the cooldown period has expired
         if hour >= LIGHT_ON_HOUR and motion_detected():
-            if (
-                last_scene_time is None
-                or time.time() - last_scene_time > SCENE_COOLDOWN
-            ):
+            if ( (last_scene_time is None) or ((time.time() - last_scene_time) > SCENE_COOLDOWN) ):
                 activate_scene(LONGING_PARAM_ID, LONGING_SCENE_ID)
-
                 desired = DAY_BRIGHTNESS if hour < DIM_HOUR else NIGHT_BRIGHTNESS
                 set_brightness(desired)
                 current_brightness = desired
@@ -60,7 +56,7 @@ while True:
 
         # Adjust brightness based on time of day
         if device_is_on and hour >= LIGHT_ON_HOUR:
-            desired = NIGHT_BRIGHTNESS
+            desired = DAY_BRIGHTNESS if hour < DIM_HOUR else NIGHT_BRIGHTNESS
             if desired != current_brightness:
                 set_brightness(desired)
                 current_brightness = desired
@@ -70,4 +66,4 @@ while True:
         print("Error:", e)
 
     # Sleep to limit loop frequency and API calls
-    time.sleep(5)
+    time.sleep(1)
