@@ -36,12 +36,13 @@ while True:
     now = datetime.now()
     hour = now.hour
 
+    # Updating device_is_on every minute
     if (time.time() - last_power_check) > power_check_interval:
         try:
-            device_is_on = is_power_on()  # API call
+            device_is_on = is_power_on()
         except Exception as e:
             print("Error fetching device state:", e)
-        last_power_check = time.time()
+
 
     try:
         # Activate scene on motion after the configured start hour,
@@ -57,7 +58,7 @@ while True:
         # Adjust brightness based on time of day
         if device_is_on and hour >= LIGHT_ON_HOUR:
             desired = DAY_BRIGHTNESS if hour < DIM_HOUR else NIGHT_BRIGHTNESS
-            if desired != current_brightness:
+            if current_brightness != desired:
                 set_brightness(desired)
                 current_brightness = desired
 

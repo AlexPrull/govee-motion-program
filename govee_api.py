@@ -152,6 +152,8 @@ def is_power_on() -> bool:
 
     for cap in capabilities:
         if cap.get("instance") == "powerSwitch":
-            return cap.get("value") == 1
+            state = cap.get("state", {})
+            value = state.get("value")
+            return value == 1 or value == "on" or value is True
 
     return False
